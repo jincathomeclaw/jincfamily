@@ -612,6 +612,50 @@
 
         const currentRate = uData.wordStats[currentCard.id][today].c / uData.wordStats[currentCard.id][today].t;
 
+        // ---------- 新增答錯停頓與確認按鈕 ----------
+        if (isCorrect) {
+            // 正確：顯示正確樣式，稍後自動跳下一題
+            clickedBtn.classList.add('correct');
+            setTimeout(() => nextCardInQueue(), 1500);
+        } else {
+            // 錯誤：顯示錯誤樣式，暫停並顯示確認按鈕
+            clickedBtn.classList.add('wrong');
+            // 清除可能的自動跳題 timeout（若有）
+            if (window.__lastTimeoutId) { clearTimeout(window.__lastTimeoutId); window.__lastTimeoutId = null; }
+            // 建立 overlay（若尚未存在）
+            let overlay = document.getElementById('confirmOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'confirmOverlay';
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.6)';
+                overlay.style.display = 'flex';
+                overlay.style.justifyContent = 'center';
+                overlay.style.alignItems = 'center';
+                overlay.style.zIndex = '2000';
+                const btn = document.createElement('button');
+                btn.id = 'confirmBtn';
+                btn.textContent = '✅ 確認繼續';
+                btn.style.padding = '1.2rem 2rem';
+                btn.style.fontSize = '1.2rem';
+                btn.style.background = '#0284C7';
+                btn.style.color = '#fff';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '8px';
+                btn.style.cursor = 'pointer';
+                overlay.appendChild(btn);
+                document.body.appendChild(overlay);
+                btn.addEventListener('click', function () {
+                    overlay.remove();
+                    nextCardInQueue();
+                });
+            } else {
+                overlay.style.display = 'flex';
+            }
+        }
+        // ------------------------------------------------
+
         if (isCorrect) {
             clickedBtn.classList.add('correct');
             playSoundEffect('correct');
