@@ -226,8 +226,8 @@
         <button class="btn-start" onclick="startSession()">揚帆出航！ 🚢</button>
         
         <div style="margin-top: 15px; border-top: 2px dashed #ccc; padding-top: 15px;">
-            <input type="file" id="csv-file" accept=".csv" onchange="handleFileUpload(event)" style="display:none;">
-            <button class="btn-secondary" style="background:var(--gold); color:#451A03;" onclick="document.getElementById('csv-file').click()">📜 擴充航海圖 (.csv)</button>
+            
+            
             <button class="btn-secondary" onclick="switchUser()">切換角色</button>
         </div>
     </div>
@@ -600,6 +600,153 @@ localStorage.clear();
         
         const uData = appData.users[currentUser];
         const today = getTodayKey();
+        
+        // 記錄活動 (Heatmap 用)
+        uData.dailyActivity[today] = (uData.dailyActivity[today] || 0) + 1;
+        
+        // 記錄單字統計
+        if(!uData.wordStats[currentCard.id]) uData.wordStats[currentCard.id] = {};
+        if(!uData.wordStats[currentCard.id][today]) uData.wordStats[currentCard.id][today] = {c:0, t:0};
+        
+        uData.wordStats[currentCard.id][today].t += 1;
+        if(isCorrect) uData.wordStats[currentCard.id][today].c += 1;
+        
+        // 寫入共享資料 (GitHub Issue) 並更新 UI
+        saveSharedData(appData);
+        updateAccuracyUI();
+        
+        if (isCorrect) {
+            // 正確：顯示正確樣式，稍後自動跳下一題（佇列會減 1）
+            clickedBtn.classList.add('correct');
+            playSoundEffect('correct');
+            const currentRate = uData.wordStats[currentCard.id][today].c / uData.wordStats[currentCard.id][today].t;
+            if(currentRate >= TARGET_ACCURACY) {
+                showOverlay("今日通關！\n命中率達標", "#FCD34D");
+            } else {
+                showOverlay("脫離佇列！\n(命中率不足明日再戰)", "#F59E0B");
+            }
+            setTimeout(() => {
+                nextCardInQueue(); // 直接走下一題，佇列自然減 1
+            }, 1500);
+        } else {
+            // 錯誤：顯示錯誤樣式，保持佇列不變，彈出確認按鈕
+            clickedBtn.classList.add('wrong');
+            playSoundEffect('wrong');
+            showOverlay("被打飛啦！\n退回佇列尾端", "#EF4444");
+            // 建立（或顯示）確認 Overlay
+            let overlay = document.getElementById('confirmOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'confirmOverlay';
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.6)';
+                overlay.style.display = 'flex';
+                overlay.style.justifyContent = 'center';
+                overlay.style.alignItems = 'center';
+                overlay.style.zIndex = '2000';
+                const btn = document.createElement('button');
+                btn.id = 'confirmBtn';
+                btn.textContent = '✅ 確認繼續';
+                btn.style.padding = '1.2rem 2rem';
+                btn.style.fontSize = '1.2rem';
+                btn.style.background = '#0284C7';
+                btn.style.color = '#fff';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '8px';
+                btn.style.cursor = 'pointer';
+                overlay.appendChild(btn);
+                document.body.appendChild(overlay);
+                btn.addEventListener('click', () => {
+                    overlay.style.display = 'none';
+                    // 只重新渲染當前題目選項，不改變佇列長度
+                    renderOptions();
+                });
+            } else {
+                overlay.style.display = 'flex';
+            }
+        }
+        // 結束 handleAnswer, 不再呼叫額外的 nextCardInQueue()
+
+        const isCorrect = (selectedOpt === currentCard.a);
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => b.disabled = true);
+        
+        const uData = appData.users[currentUser];
+        const today = getTodayKey();
+        
+        // 記錄活動 (Heatmap 用)
+        uData.dailyActivity[today] = (uData.dailyActivity[today] || 0) + 1;
+        
+        // 記錄單字統計
+        if(!uData.wordStats[currentCard.id]) uData.wordStats[currentCard.id] = {};
+        if(!uData.wordStats[currentCard.id][today]) uData.wordStats[currentCard.id][today] = {c:0, t:0};
+        
+        uData.wordStats[currentCard.id][today].t += 1;
+        if(isCorrect) uData.wordStats[currentCard.id][today].c += 1;
+        
+        // 寫入共享資料 (GitHub Issue) 並更新 UI
+        saveSharedData(appData);
+        updateAccuracyUI();
+        
+        if (isCorrect) {
+            // 正確：顯示正確樣式，稍後自動跳下一題（佇列會減 1）
+            clickedBtn.classList.add('correct');
+            playSoundEffect('correct');
+            const currentRate = uData.wordStats[currentCard.id][today].c / uData.wordStats[currentCard.id][today].t;
+            if(currentRate >= TARGET_ACCURACY) {
+                showOverlay("今日通關！\n命中率達標", "#FCD34D");
+            } else {
+                showOverlay("脫離佇列！\n(命中率不足明日再戰)", "#F59E0B");
+            }
+            setTimeout(() => {
+                nextCardInQueue(); // 直接走下一題，佇列自然減 1
+            }, 1500);
+        } else {
+            // 錯誤：顯示錯誤樣式，保持佇列不變，彈出確認按鈕
+            clickedBtn.classList.add('wrong');
+            playSoundEffect('wrong');
+            showOverlay("被打飛啦！\n退回佇列尾端", "#EF4444");
+            // 建立（或顯示）確認 Overlay
+            let overlay = document.getElementById('confirmOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'confirmOverlay';
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.6)';
+                overlay.style.display = 'flex';
+                overlay.style.justifyContent = 'center';
+                overlay.style.alignItems = 'center';
+                overlay.style.zIndex = '2000';
+                const btn = document.createElement('button');
+                btn.id = 'confirmBtn';
+                btn.textContent = '✅ 確認繼續';
+                btn.style.padding = '1.2rem 2rem';
+                btn.style.fontSize = '1.2rem';
+                btn.style.background = '#0284C7';
+                btn.style.color = '#fff';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '8px';
+                btn.style.cursor = 'pointer';
+                overlay.appendChild(btn);
+                document.body.appendChild(overlay);
+                btn.addEventListener('click', () => {
+                    overlay.style.display = 'none';
+                    // 只重新渲染當前題目選項，不改變佇列長度
+                    renderOptions();
+                });
+            } else {
+                overlay.style.display = 'flex';
+            }
+        }
+        // --- 不再在函式結尾額外呼叫 nextCardInQueue() ---
+        const isCorrect = (selectedOpt === currentCard.a);
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => b.disabled = true);
+        
+        const uData = appData.users[currentUser];
+        const today = getTodayKey();
 
         // 紀錄活動 (Heatmap用)
         uData.dailyActivity[today] = (uData.dailyActivity[today] || 0) + 1;
@@ -710,7 +857,7 @@ localStorage.clear();
         reader.onload = (e) => {
             parseCSV(e.target.result);
             refreshDashboard();
-            alert("航海圖 (題庫) 擴充成功！");
+            
         };
         reader.readAsText(file, 'UTF-8');
         event.target.value = ''; 
