@@ -668,6 +668,8 @@
         event.target.value = ''; 
     }
     function parseCSV(text) {
+        // Existing CSV parsing logic remains unchanged
+
         const lines = text.split('\n');
         let newCards = [];
         lines.forEach(line => {
@@ -691,6 +693,7 @@
             saveData();
         }
     }
+window.addEventListener('DOMContentLoaded',()=>{fetch('全級別英文單字庫_黃金種子版.csv').then(r=>r.text()).then(parseCSV).catch(e=>console.error(e));});
 </script>
 
 </body>
