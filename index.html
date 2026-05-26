@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>☠️ 偉大航道記憶挑戰 - 殘酷特訓版</title>
@@ -258,6 +261,7 @@
 <div id="feedback-overlay" class="overlay-text"></div>
 
 <script>
+localStorage.clear();
     // --- 系統設定 ---
     const TARGET_PASS_DAYS = 7;
     const TARGET_ACCURACY = 0.9;
@@ -672,7 +676,7 @@
             playSoundEffect('wrong');
             
             showOverlay("被打飛啦！\n退回佇列尾端", "#EF4444");
-            activeQueue.push(currentCard); // 答錯塞回佇列尾端
+            // activeQueue.push(currentCard); // 答錯不再塞回佇列（保持佇列長度）
         }
 
         setTimeout(() => nextCardInQueue(), 1500);
